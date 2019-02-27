@@ -1,0 +1,3 @@
+[submodule "src/mimi-rice-2010.jl"]
+	path = src/rice2010
+	url = https://github.com/anthofflab/mimi-rice-2010.jl.git

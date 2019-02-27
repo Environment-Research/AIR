@@ -1,0 +1,4 @@
+#Keep this folder in Git repository, but do not track the model/graph output in it.
+*
+# But not these files...
+!.gitignore
