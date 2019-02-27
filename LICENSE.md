@@ -22,5 +22,5 @@ Copyright (c) 2019: Noah Scovronick, Mark Budolfson, Francis Dennig, Frank Erric
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 This repository uses the mimi-rice-2010.jl submodule, which has its
-own license and useage restrictions that can be viewed at: https://github.com/anthofflab/mimi-rice-2010.jl/blob/master/LICENSE.md
+own license and usage restrictions that can be viewed at: https://github.com/anthofflab/mimi-rice-2010.jl/blob/master/LICENSE.md
 
