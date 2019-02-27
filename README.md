@@ -39,3 +39,5 @@ This git repository uses a git submodule for the [Mimi implementation of RICE201
 
 ## Issues?
 If you have any trouble downloading the code or running RICE+AIR, please contact Frank Errickson at FrankErrickson@berkeley.edu
+
+[![DOI](https://zenodo.org/badge/172801874.svg)](https://zenodo.org/badge/latestdoi/172801874)
