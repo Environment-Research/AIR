@@ -6,10 +6,11 @@ This repository contains source code for the RICE+AIR model presented in *The Im
 
 ## Software Requirements
 
-RICE+AIR works with [Julia 1.0 and later versions](https://julialang.org/downloads/).
+RICE+AIR works with [Julia 1.1 and later versions](https://julialang.org/downloads/).  You will also need to make a one time connection to the [Mimi project's online model registry](https://github.com/mimiframework/MimiRegistry) (instructions below).
 
 After downloading Julia, the required packages can be installed by executing the following commands using Julia's builtin package manager [Pkg](https://docs.julialang.org/en/v1/stdlib/Pkg/index.html):
 ````julia
+using Pkg
 Pkg.add("Mimi")
 Pkg.add("NLopt")
 Pkg.add("ExcelReaders")
@@ -35,7 +36,12 @@ include("src/user_interface.jl")
 
 ## Note on Cloning the repository
 
-This git repository uses a git submodule for the [Mimi implementation of RICE2010](https://github.com/anthofflab/mimi-rice-2010.jl). To ensure the submodule gets properly downloaded, make sure to use the git ``--recurse-submodules`` option when cloning the repository. If you cloned the repository without that option, you can issue the following two git commands to make sure the submodule is present on your system: ``git submodule init``, followed by ``git submodule update``.
+This git repository uses the [Mimi implementation of RICE2010](https://github.com/anthofflab/MimiRICE2010.jl). The Mimi project maintains an [online registry](https://github.com/mimiframework/MimiRegistry) of Mimi models that includes RICE2010.  Once you connect your Julia installation to the Mimi registry, the models can be used in a similar manner to Julia packages (no longer requiring the use of git submodules for multi-model projects).
+
+To connect to the Mimi registry, you need to run the following command only once using the Julia package REPL (note, you can enter the package REPL using the `]` key and exit using the `backspace` key):
+````julia
+registry add https://github.com/mimiframework/MimiRegistry.git
+````
 
 ## Issues?
 If you have any trouble downloading the code or running RICE+AIR, please contact Frank Errickson at FrankErrickson@berkeley.edu
