@@ -8,7 +8,6 @@
 ########################################################################################################################
 # CUSTOM INPUT TYPE TO RUN RICE+AIR 
 ########################################################################################################################
-
 # Description: This creates a custom type to store the user-defined inputs to run an instance of RICE+AIR.  The 
 #              "RICE_AIR_input" type will be created for each separate optimization of RICE+AIR, with the model 
 #               settings dependent on the parameters supplied in the "user_interface.jl" file.  Descriptions of 
@@ -25,6 +24,47 @@ struct RICE_AIR_inputs
     Hyears::Float64
     use_VSL::Bool
     VOLY_elasticity::Float64
+end
+
+########################################################################################################################
+# LOAD MODEL PARAMETERS FROM RICE 2010
+########################################################################################################################
+# Description: This functions extracts model parameters from the unmodified Mimi version of RICE that are needed to 
+#              construct the RICE+AIR model (Note: you must call "using MimiRICE2010" once before using this function).
+#----------------------------------------------------------------------------------------------------------------------
+
+function load_rice_parameters()
+
+    # Load and run an instance of RICE 2010.
+    rice2010 = getrice()
+    run(rice2010)
+
+    # Extract and return the necessary parameters.
+    p = Dict{Symbol,Any}()
+
+    p[:population] = rice2010[:grosseconomy, :l]
+
+    p[:mat0] = rice2010[:co2cycle, :mat0]
+    p[:mat1] = rice2010[:co2cycle, :mat1]
+    p[:mu0]  = rice2010[:co2cycle, :mu0]
+    p[:ml0]  = rice2010[:co2cycle, :ml0]
+    p[:b12]  = rice2010[:co2cycle, :b12]
+    p[:b23]  = rice2010[:co2cycle, :b23]
+    p[:b11]  = rice2010[:co2cycle, :b11]
+    p[:b21]  = rice2010[:co2cycle, :b21]
+    p[:b22]  = rice2010[:co2cycle, :b22]
+    p[:b32]  = rice2010[:co2cycle, :b32]
+    p[:b33]  = rice2010[:co2cycle, :b33]
+
+    p[:fco22x]  = rice2010[:climatedynamics, :fco22x]
+    p[:t2xco2]  = rice2010[:climatedynamics, :t2xco2]
+    p[:tatm0]   = rice2010[:climatedynamics, :tatm0]
+    p[:tocean0] = rice2010[:climatedynamics, :tocean0]
+    p[:c1]      = rice2010[:climatedynamics, :c1]
+    p[:c3]      = rice2010[:climatedynamics, :c3]
+    p[:c4]      = rice2010[:climatedynamics, :c4]
+
+    return p
 end
 
 
@@ -203,7 +243,7 @@ end
 #                      
 #       SSP_scenario: A symbol indicating which SSP scneario should be used to calculate the co-reduction relationship.
 #----------------------------------------------------------------------------------------------------------------------
-function load_riceair_params(SSP_scenario::Symbol)
+function load_air_parameters(SSP_scenario::Symbol)
 
     #Create dictionary to hold cleaned up parameter values and data.
     p = Dict{Symbol,Any}()
