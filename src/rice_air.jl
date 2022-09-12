@@ -6,13 +6,12 @@ include("air_components/air_lifeyears.jl")
 include("air_components/air_radiativeforcing.jl")
 include("air_components/air_consumption.jl")
 include("modified_rice_components/welfare_modified.jl")
-include("rice2010/src/rice2010.jl")
 include("modified_rice_components/co2cycle_modified.jl")
 include("modified_rice_components/climatedynamics_modified.jl")
 include("helper_functions.jl")
 
-# Load Rice2010 module.
-using .Rice2010
+# Load RICE 2010 package.
+using MimiRICE2010
 
 
 ####################################################################################################
@@ -25,7 +24,7 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     riceair_params = load_riceair_params(inputs.SSP_scenario)
 
     # Read in RICE2010 parameters.
-    rice_params = Rice2010.getrice2010parameters("data/RICE_2010_base_000.xlsm")
+    rice_params = MimiRICE2010.getrice2010parameters("data/RICE_2010_base_000.xlsm")
 
     # Set RICE2010 population for initial value, then use updated UN population values and rescale to correct units.
     rice_air_population = zeros(inputs.nsteps,12)
@@ -33,7 +32,7 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     rice_air_population[2:end,:] = (riceair_params[:population][1:(inputs.nsteps-1),:])./1000.0
 
     # Create an instance of RICE2010, and then add in AIR components.
-    m = Rice2010.getrice()
+    m = MimiRICE2010.get_model()
 
     # Set index for 5 aerosol types in RICE+AIR.
     set_dimension!(m, :aerosols, ["SO2", "PM2.5", "NOX", "BC", "OC"])
@@ -60,32 +59,31 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     # -------------------------------------------------------------------------------------------
     # -------------------------------------------------------------------------------------------
 
-    #---- GROSS ECONOMIC OUTPUT ----#
-    set_param!(m, :grosseconomy, :l, rice_air_population)
-
-    #---- NET ECONOMIC OUTPUT ----#
-    set_param!(m, :neteconomy, :l, rice_air_population)
-
-    #---- EMISSIONS ----#
-    set_param!(m, :emissions, :MIU, zeros(inputs.nsteps, 12))
+    #---- PAREMETERS SHARED BY MULTIPLE COMPONENTS ----#
+    update_param!(m, :l, rice_air_population)
+    set_param!(m, :MIU, zeros(inputs.nsteps, 12))
+    set_param!(m, :pop, rice_air_population)
+    set_param!(m, :SO2₀, riceair_params[:SO2₀])
+    set_param!(m, :PM25₀, riceair_params[:PM25₀])
+    set_param!(m, :NOX₀, riceair_params[:NOX₀])
+    set_param!(m, :mat1, rice_params[:mat1])
+    set_param!(m, :fco22x, rice_params[:fco22x])
+    set_param!(m, :forcoth, riceair_params[:total_exogeous_rf])
 
     #---- CO₂ CYCLE ----#
-    set_param!(m, :co2cycle, :mat0, rice_params[:mat0])
-    set_param!(m, :co2cycle, :mu0, rice_params[:mu0])
-    set_param!(m, :co2cycle, :ml0, rice_params[:ml0])
-    set_param!(m, :co2cycle, :b12, rice_params[:b12])
-    set_param!(m, :co2cycle, :b23, rice_params[:b23])
-    set_param!(m, :co2cycle, :b11, rice_params[:b11])
-    set_param!(m, :co2cycle, :b21, rice_params[:b21])
-    set_param!(m, :co2cycle, :b22, rice_params[:b22])
-    set_param!(m, :co2cycle, :b32, rice_params[:b32])
-    set_param!(m, :co2cycle, :b33, rice_params[:b33])
+    set_param!(m, :mat0, rice_params[:mat0])
+    set_param!(m, :mu0, rice_params[:mu0])
+    set_param!(m, :ml0, rice_params[:ml0])
+    set_param!(m, :b12, rice_params[:b12])
+    set_param!(m, :b23, rice_params[:b23])
+    set_param!(m, :b11, rice_params[:b11])
+    set_param!(m, :b21, rice_params[:b21])
+    set_param!(m, :b22, rice_params[:b22])
+    set_param!(m, :b32, rice_params[:b32])
+    set_param!(m, :b33, rice_params[:b33])
 
     #---- BASELINE AEROSOL EMISSIONS ----#
     set_param!(m, :air_baseline_emissions, :population, rice_air_population)
-    set_param!(m, :air_baseline_emissions, :SO2₀, riceair_params[:SO2₀])
-    set_param!(m, :air_baseline_emissions, :PM25₀, riceair_params[:PM25₀])
-    set_param!(m, :air_baseline_emissions, :NOX₀, riceair_params[:NOX₀])
     set_param!(m, :air_baseline_emissions, :omega_1, riceair_params[:omega_1])
     set_param!(m, :air_baseline_emissions, :omega_2, riceair_params[:omega_2])
     set_param!(m, :air_baseline_emissions, :phi_1, riceair_params[:phi_1])
@@ -94,7 +92,6 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     set_param!(m, :air_baseline_emissions, :K, inputs.kuznets_term)
 
     #---- AEROSOL CO-REDUCTIONS FROM SHARED SOURCES ----#
-    set_param!(m, :air_coreduction, :MIU, zeros(inputs.nsteps, 12))
     set_param!(m, :air_coreduction, :κ, riceair_params[:kappa])
 
     #---- RADIATIVE FORCING WITH ENDOGENOUS AEROSOLS ----#
@@ -106,18 +103,14 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     set_param!(m, :air_radiativeforcing, :u1_NOX, riceair_params[:u1_NOX])
     set_param!(m, :air_radiativeforcing, :u1_BC,  riceair_params[:u1_BC])
     set_param!(m, :air_radiativeforcing, :u1_OC,  riceair_params[:u1_OC])
-    set_param!(m, :air_radiativeforcing, :forcoth, riceair_params[:total_exogeous_rf])
-    set_param!(m, :air_radiativeforcing, :fco22x, rice_params[:fco22x])
-    set_param!(m, :air_radiativeforcing, :mat1, rice_params[:mat1])
 
     #---- CLIMATE MODEL ----#
-    set_param!(m, :climatedynamics, :fco22x, rice_params[:fco22x])
-    set_param!(m, :climatedynamics, :t2xco2, rice_params[:t2xco2])
-    set_param!(m, :climatedynamics, :tatm0, rice_params[:tatm0])
-    set_param!(m, :climatedynamics, :tocean0, rice_params[:tocean0])
-    set_param!(m, :climatedynamics, :c1, rice_params[:c1])
-    set_param!(m, :climatedynamics, :c3, rice_params[:c3])
-    set_param!(m, :climatedynamics, :c4, rice_params[:c4])
+    set_param!(m, :t2xco2, rice_params[:t2xco2])
+    set_param!(m, :tatm0, rice_params[:tatm0])
+    set_param!(m, :tocean0, rice_params[:tocean0])
+    set_param!(m, :c1, rice_params[:c1])
+    set_param!(m, :c3, rice_params[:c3])
+    set_param!(m, :c4, rice_params[:c4])
  
     #---- LIFEYEARS GAINED FROM CO-REDUCTIONS ----#
     set_param!(m, :air_lifeyears, :τ, inputs.tau)
@@ -128,19 +121,14 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     set_param!(m, :air_lifeyears, :source_receptor_PM25, riceair_params[:sr_PM25])
     set_param!(m, :air_lifeyears, :source_receptor_NOX, riceair_params[:sr_NOX])
     set_param!(m, :air_lifeyears, :Θ , riceair_params[:Θ])
-    set_param!(m, :air_lifeyears, :SO2₀, riceair_params[:SO2₀])
-    set_param!(m, :air_lifeyears, :PM25₀, riceair_params[:PM25₀])
-    set_param!(m, :air_lifeyears, :NOX₀, riceair_params[:NOX₀])
     set_param!(m, :air_lifeyears, :base_deaths , riceair_params[:base_deaths])
 
     #---- MONTEIZED HEALTH BENEFITS & CONSUMPTION ----#
     set_param!(m, :air_consumption, :Hyears, inputs.Hyears)
     set_param!(m, :air_consumption, :VOLY_elasticity, inputs.VOLY_elasticity)
-    set_param!(m, :air_consumption, :pop, rice_air_population)
     set_param!(m, :air_consumption, :use_VSL, inputs.use_VSL)
 
     #---- ECONOMIC WELFARE ----#
-    set_param!(m, :welfare, :pop, rice_air_population)
     set_param!(m, :welfare, :rho, inputs.rho)
     set_param!(m, :welfare, :eta, inputs.eta)
 
