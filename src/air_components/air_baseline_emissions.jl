@@ -43,7 +43,7 @@
         for r in d.regions
 
             # Calculate Kuznets relevant income.
-            v.kuznets_income[t,r] = (p.gross_output[1,r] / (p.population[1,r]/1000.0)) + p.K * ((p.gross_output[t,r] / (p.population[t,r]/1000.0)) - (p.gross_output[1,r] / (p.population[1,r]/1000.0)))
+            v.kuznets_income[t,r] = (p.gross_output[TimestepIndex(1),r] / (p.population[TimestepIndex(1),r]/1000.0)) + p.K * ((p.gross_output[t,r] / (p.population[t,r]/1000.0)) - (p.gross_output[TimestepIndex(1),r] / (p.population[TimestepIndex(1),r]/1000.0)))
 
             for a in d.aerosols
                 # Calculate emission intensity factors for the five aerosols.

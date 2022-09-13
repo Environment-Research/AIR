@@ -98,8 +98,7 @@ function construct_rice_air_objective(inputs::RICE_AIR_inputs, backstop_price::A
 
         # Calculate regional CO₂ mitigation levels from the carbon tax vector, run RICE+AIR with this policy, and return welfare.
         abatement_level, tax = mu_from_tax(opt_tax, backstop_price, 2.8)
-        set_param!(m, :emissions, :MIU, abatement_level)
-        set_param!(m, :air_coreduction, :MIU, abatement_level)
+        update_param!(m, :MIU, abatement_level)
         run(m)
         return m[:welfare, :welfare]
     end
@@ -182,8 +181,7 @@ function global_mitigation_mix(opt_m::Mimi.Model)
     # Get baseline version of RICE+AIR without CO₂ mitigation policy.
     global_emissions_opt  = sum(opt_m[:emissions, :EIND], dims=2)
     base_m = deepcopy(opt_m)
-    set_param!(base_m, :emissions, :MIU, zeros(inputs.nsteps, 12))
-    set_param!(base_m, :air_coreduction, :MIU, zeros(inputs.nsteps, 12))
+    update_param!(base_m, :MIU, zeros(inputs.nsteps, 12))
     run(base_m)
 
     global_emissions_base = sum(base_m[:emissions, :EIND], dims=2)
@@ -247,9 +245,9 @@ function load_riceair_params(SSP_scenario::Symbol)
     for (y,poll) in enumerate(pollutants)
         for (x,reg) in enumerate(regions)
             # Isolate pollutant.
-            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[:POLL]),:]
+            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[!,:POLL]),:]
             # Reorder regions for that pollutant.
-            phi1[x,y] = aerosol[findall(z-> z==reg, aerosol[:Region]), :phi1][1]
+            phi1[x,y] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :phi1][1]
         end
     end
 
@@ -257,9 +255,9 @@ function load_riceair_params(SSP_scenario::Symbol)
     for (y,poll) in enumerate(pollutants)
         for (x,reg) in enumerate(regions)
             # Isolate pollutant.
-            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[:POLL]),:]
+            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[!,:POLL]),:]
             # Reorder regions for that pollutant.
-            phi2[x,y] = aerosol[findall(z-> z==reg, aerosol[:Region]), :phi2][1]
+            phi2[x,y] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :phi2][1]
         end
     end
 
@@ -267,9 +265,9 @@ function load_riceair_params(SSP_scenario::Symbol)
     for (y,poll) in enumerate(pollutants)
         for (x,reg) in enumerate(regions)
             # Isolate pollutant.
-            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[:POLL]),:]
+            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[!,:POLL]),:]
             # Reorder regions for that pollutant.
-            phi3[x,y] = aerosol[findall(z-> z==reg, aerosol[:Region]), :ph3][1]
+            phi3[x,y] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :ph3][1]
         end
     end
 
@@ -277,9 +275,9 @@ function load_riceair_params(SSP_scenario::Symbol)
     for (y,poll) in enumerate(pollutants)
         for (x,reg) in enumerate(regions)
             # Isolate pollutant.
-            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[:POLL]),:]
+            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[!,:POLL]),:]
             # Reorder regions for that pollutant.
-            omega1[x,y] = aerosol[findall(z-> z==reg, aerosol[:Region]), :Omega1][1]
+            omega1[x,y] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :Omega1][1]
         end
     end
 
@@ -287,9 +285,9 @@ function load_riceair_params(SSP_scenario::Symbol)
     for (y,poll) in enumerate(pollutants)
         for (x,reg) in enumerate(regions)
             # Isolate pollutant.
-            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[:POLL]),:]
+            aerosol = phi_omega_data[findall(z-> z==poll, phi_omega_data[!,:POLL]),:]
             # Reorder regions for that pollutant.
-            omega2[x,y] = aerosol[findall(z-> z==reg, aerosol[:Region]), :Omega2][1]
+            omega2[x,y] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :Omega2][1]
         end
     end
 
@@ -322,9 +320,9 @@ function load_riceair_params(SSP_scenario::Symbol)
     for (y,poll) in enumerate(pollutants)
         for (x,reg) in enumerate(regions)
             # Isolate pollutant.
-            aerosol = kappa_data[findall(z-> z==poll, kappa_data[:Pollutant]),:]
+            aerosol = kappa_data[findall(z-> z==poll, kappa_data[!,:Pollutant]),:]
             # Reorder regions for that pollutant.
-            kappa[x,y] = aerosol[findall(z-> z==reg, aerosol[:Region]), SSP_scenario][1]
+            kappa[x,y] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), SSP_scenario][1]
         end
     end
 
@@ -339,14 +337,14 @@ function load_riceair_params(SSP_scenario::Symbol)
 
     for (x,reg) in enumerate(regions)
         # Isolate pollutant.
-        aerosol = SR_data[findall(z-> z=="SO2", SR_data[:p]),:]
-        SR_SO2[x] = aerosol[findall(z-> z==reg, aerosol[:i]), Symbol("SR_ii'p")][1]
+        aerosol = SR_data[findall(z-> z=="SO2", SR_data[!,:p]),:]
+        SR_SO2[x] = aerosol[findall(z-> z==reg, aerosol[!,:i]), Symbol("SR_ii'p")][1]
 
-        aerosol = SR_data[findall(z-> z=="PM_2_5", SR_data[:p]),:]
-        SR_PM25[x] = aerosol[findall(z-> z==reg, aerosol[:i]), Symbol("SR_ii'p")][1]
+        aerosol = SR_data[findall(z-> z=="PM_2_5", SR_data[!,:p]),:]
+        SR_PM25[x] = aerosol[findall(z-> z==reg, aerosol[!,:i]), Symbol("SR_ii'p")][1]
 
-        aerosol = SR_data[findall(z-> z=="NOX", SR_data[:p]),:]
-        SR_NOX[x] = aerosol[findall(z-> z==reg, aerosol[:i]), Symbol("SR_ii'p")][1]
+        aerosol = SR_data[findall(z-> z=="NOX", SR_data[!,:p]),:]
+        SR_NOX[x] = aerosol[findall(z-> z==reg, aerosol[!,:i]), Symbol("SR_ii'p")][1]
     end
 
     p[:sr_SO2]  = SR_SO2
@@ -402,21 +400,21 @@ function load_riceair_params(SSP_scenario::Symbol)
 
     for (x,reg) in enumerate(regions)
        # Isolate pollutant.
-       aerosol = u1_u0_data[findall(z-> z=="SO2", u1_u0_data[:POLL]),:]
-       u1_SO2[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u1][1]
-       u0_SO2[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u0][1]
+       aerosol = u1_u0_data[findall(z-> z=="SO2", u1_u0_data[!,:POLL]),:]
+       u1_SO2[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u1][1]
+       u0_SO2[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u0][1]
 
-       aerosol = u1_u0_data[findall(z-> z=="NOX", u1_u0_data[:POLL]),:]
-       u1_NOX[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u1][1]
-       u0_NOX[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u0][1]
+       aerosol = u1_u0_data[findall(z-> z=="NOX", u1_u0_data[!,:POLL]),:]
+       u1_NOX[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u1][1]
+       u0_NOX[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u0][1]
 
-       aerosol = u1_u0_data[findall(z-> z=="PM_BC", u1_u0_data[:POLL]),:]
-       u1_BC[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u1][1]
-       u0_BC[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u0][1]
+       aerosol = u1_u0_data[findall(z-> z=="PM_BC", u1_u0_data[!,:POLL]),:]
+       u1_BC[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u1][1]
+       u0_BC[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u0][1]
 
-       aerosol = u1_u0_data[findall(z-> z=="PM_OC", u1_u0_data[:POLL]),:]
-       u1_OC[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u1][1]
-       u0_OC[x] = aerosol[findall(z-> z==reg, aerosol[:Region]), :u0][1]
+       aerosol = u1_u0_data[findall(z-> z=="PM_OC", u1_u0_data[!,:POLL]),:]
+       u1_OC[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u1][1]
+       u0_OC[x] = aerosol[findall(z-> z==reg, aerosol[!,:Region]), :u0][1]
     end
 
    p[:u0_SO2] = u0_SO2

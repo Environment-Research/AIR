@@ -1,5 +1,6 @@
 # Load required Julia packages.
 using NLopt
+using MimiRICE2010
 using Mimi
 using ExcelReaders
 using ExcelFiles
@@ -74,7 +75,7 @@ output_directory = joinpath((@__DIR__), "../results", results_folder)
 mkdir(output_directory)
 
 # Select optimization starting point as a fraction of maximum carbon tax in each period.
-rice_parameters = Rice2010.getrice2010parameters("data/RICE_2010_base_000.xlsm")
+rice_parameters = MimiRICE2010.getrice2010parameters("data/RICE_2010_base_000.xlsm")
 starting_vals = maximum(rice_parameters[:pbacktime], dims=2)[2:(n_objective+1)] .* 1000 .* 0.001
 
 # Combine user-defined inputs to create a particular specification of RICE+AIR.
@@ -89,8 +90,7 @@ inputs = RICE_AIR_inputs(nsteps, rho, eta, τ, K, SSP_scenario, Hyears, use_VSL,
 cobenefit_decarbonization, cobenefit_tax, cobenefit_model, minx_cobenefit = optimize_rice_air(inputs, opt_algorithm, n_objective, stop_time, tolerance, rice_parameters[:pbacktime], true, starting_vals)
 
 # Run instance of model with optimal decarbonization policy.
-set_param!(cobenefit_model, :emissions, :MIU, cobenefit_decarbonization)
-set_param!(cobenefit_model, :air_coreduction, :MIU, cobenefit_decarbonization)
+update_param!(cobenefit_model, :MIU, cobenefit_decarbonization)
 run(cobenefit_model)
 
 # Save key model output (global temperature anomaly, carbon tax, global decarbonization rate).
@@ -108,8 +108,7 @@ if run_reference_case
     reference_decarbonization, reference_tax, reference_model, minx_reference = optimize_rice_air(inputs, opt_algorithm, n_objective, stop_time, tolerance, rice_parameters[:pbacktime], false, starting_vals)
 
     # Run instance of model with optimal decarbonization policy for reference case.
-    set_param!(reference_model, :emissions, :MIU, reference_decarbonization)
-    set_param!(reference_model, :air_coreduction, :MIU, reference_decarbonization)
+    update_param!(reference_model, :MIU, reference_decarbonization)
     run(reference_model)
 
     # Save key model output for reference case (global temperature anomaly, carbon tax, global decarbonization rate).

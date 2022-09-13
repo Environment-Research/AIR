@@ -9,7 +9,7 @@
     ###############################################################################################################################
     # Model Parameters
     ###############################################################################################################################
-    use_VSL::Bool    = Parameter()                      # True/False indicator for whether or not to use a VSL with avoided deaths.
+    use_VSL          = Parameter{Bool}()                      # True/False indicator for whether or not to use a VSL with avoided deaths.
     Hyears           = Parameter()                      # Number of years of consumption to use in VOLY calculations.
     VOLY_elasticity  = Parameter()                      # Consumption elasticity of VOLY.
     pop              = Parameter(index=[time, regions]) # Regional population levels (millions of people).
