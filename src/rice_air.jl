@@ -1,4 +1,14 @@
 
+module AIR
+
+# Load packages.
+using CSVFiles
+using DataFrames
+using ExcelFiles
+using ExcelReaders
+using Mimi
+using MimiRICE2010
+
 # Load files needed to construct RICE+AIR.
 include("air_components/air_baseline_emissions.jl")
 include("air_components/air_coreduction.jl")
@@ -10,15 +20,12 @@ include("modified_rice_components/co2cycle_modified.jl")
 include("modified_rice_components/climatedynamics_modified.jl")
 include("helper_functions.jl")
 
-# Load RICE 2010 package.
-using MimiRICE2010
-
 
 ####################################################################################################
 # Create a function to construct RICE+AIR given user defined parameter settings.
 ####################################################################################################
 
-function construct_rice_air(inputs::RICE_AIR_inputs)
+function construct_rice_air(inputs)
 
     # Read in RICE+AIR Parameters and data.
     air_params = load_riceair_params(inputs.SSP_scenario)
@@ -192,3 +199,5 @@ function construct_rice_air(inputs::RICE_AIR_inputs)
     # Return RICE+AIR model.
     return m
 end
+
+end #module
