@@ -8,6 +8,7 @@ using DataFrames
 using CSVFiles
 
 # Load RICE+AIR source code.
+include("helper_functions.jl")
 include("rice_air.jl")
 
 ####################################################################################################
