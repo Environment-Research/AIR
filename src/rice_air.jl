@@ -1,5 +1,5 @@
 
-module AIR
+module rice_air
 
 # Load packages.
 using CSVFiles

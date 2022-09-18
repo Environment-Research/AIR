@@ -75,7 +75,7 @@ end
 function construct_rice_air_objective(inputs::RICE_AIR_inputs, backstop_price::Array{Float64,2}, cobenefits::Bool)
 
     # Get an instance of RICE-AIR, given user parameter specifications.
-    m = AIR.construct_rice_air(inputs)
+    m = rice_air.construct_rice_air(inputs)
 
     # If optimizing reference case, set health co-benefits to 0.
     if cobenefits == false
