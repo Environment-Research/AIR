@@ -207,7 +207,7 @@ function load_riceair_params(SSP_scenario::Symbol)
     p = Dict{Symbol,Any}()
 
     # Open data file and extract releveant sheets.
-    f = "data/RICE_AIR_Parameters.xlsx"
+    f = joinpath(@__DIR__, "..", "data", "RICE_AIR_Parameters.xlsx")
     phi_omega_data = DataFrame(load(f, "phi Omega!A1:G61"))
     kappa_data = DataFrame(load(f, "kappa!A1:I61"))
     u1_u0_data = DataFrame(load(f, "u1 u0!A1:E49"))

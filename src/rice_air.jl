@@ -31,7 +31,7 @@ function construct_rice_air(inputs)
     air_params = load_riceair_params(inputs.SSP_scenario)
 
     # Read in RICE2010 parameters.
-    rice_params = MimiRICE2010.getrice2010parameters("data/RICE_2010_base_000.xlsm")
+    rice_params = MimiRICE2010.getrice2010parameters(joinpath(@__DIR__, "..", "data", "RICE_2010_base_000.xlsm"))
 
     # Set RICE2010 population for initial value, then use updated UN population values and rescale to correct units.
     rice_air_population = zeros(inputs.nsteps,12)
